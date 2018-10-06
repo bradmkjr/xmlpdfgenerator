@@ -104,7 +104,10 @@ cache.getCache(md5(url), function(err,data){
 		            if (err) {
 		                console.log('Got error: ' + err.message);
 		            } else {
-		            	cache.setCache(md5(url), JSON.stringify(result), wwwServer(result));
+		            	cache.setCache(md5(url), JSON.stringify(result), function(){
+		            		console.log('Cached results');
+		            	});
+		            	wwwServer(result);
 					}
 		        });
 		    });
