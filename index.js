@@ -14,6 +14,9 @@ const url = process.env.URL || 'http://example.com';
 console.log(url);
 console.log(md5(url));
 
+"use strict";
+
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -84,7 +87,11 @@ function wwwServer(data){
 }
 
 cache.getCache(md5(url), function(err,data){
-	if(data == undefined){
+
+	if (err) {
+		console.log('Got error: ' + err.message);
+		return;
+    }else if(data == undefined){
 		// No data, do the request
 		https.get( url, function(res) {
 		    var response_data = '';
