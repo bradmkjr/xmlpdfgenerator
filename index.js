@@ -17,35 +17,6 @@ console.log(md5(url));
 const app = express();
 const port = process.env.PORT || 3000;
 
-cache.getCache(md5(url), function(err,data){
-	if(data == undefined){
-		// No data, do the request
-		https.get( url, function(res) {
-		    var response_data = '';
-		    res.setEncoding('utf8');
-		    res.on('data', function(chunk) {
-		        response_data += chunk;
-		    });
-		    res.on('end', function() {
-		        parser.parseString(response_data, function(err, result) {
-		            if (err) {
-		                console.log('Got error: ' + err.message);
-		            } else {
-		            	cache.setCache(md5(url), JSON.stringify(result), wwwServer(result));
-					}
-		        });
-		    });
-		    res.on('error', function(err) {
-		        console.log('Got error: ' + err.message);
-		    });
-		});
-	}else{
-		// console.log(data);
-		wwwServer(JSON.parse(data));
-	}
-
-})
-
 function wwwServer(data){
 	console.log('www Server');
 	console.log(data.properties.property.length);
@@ -112,6 +83,34 @@ function wwwServer(data){
 
 }
 
+cache.getCache(md5(url), function(err,data){
+	if(data == undefined){
+		// No data, do the request
+		https.get( url, function(res) {
+		    var response_data = '';
+		    res.setEncoding('utf8');
+		    res.on('data', function(chunk) {
+		        response_data += chunk;
+		    });
+		    res.on('end', function() {
+		        parser.parseString(response_data, function(err, result) {
+		            if (err) {
+		                console.log('Got error: ' + err.message);
+		            } else {
+		            	cache.setCache(md5(url), JSON.stringify(result), wwwServer(result));
+					}
+		        });
+		    });
+		    res.on('error', function(err) {
+		        console.log('Got error: ' + err.message);
+		    });
+		});
+	}else{
+		// console.log(data);
+		wwwServer(JSON.parse(data));
+	}
+
+})
 
 
 // router.get('/', (req, res) => {
