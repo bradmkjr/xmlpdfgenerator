@@ -9,7 +9,7 @@ const PDFDocument = require('pdfkit');
 const md5 = require('md5');
 const cache = require('sqlcachedb');
 
-const url = process.env.URL;
+const url = process.env.URL || 'http://example.com';
 
 const app = express();
 const port = process.env.PORT || 3000;
