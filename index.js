@@ -11,6 +11,9 @@ const cache = require('sqlcachedb');
 
 const url = process.env.URL || 'http://example.com';
 
+console.log(url);
+console.log(md5(url));
+
 const app = express();
 const port = process.env.PORT || 3000;
 
