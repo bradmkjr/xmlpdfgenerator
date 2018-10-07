@@ -154,12 +154,14 @@ function createPDF(data, res){
 	doc.y = 50;
 	// doc.x = 50;
 	doc.font('Helvetica-Bold').fontSize(18).text('Table of Contents');
+	doc.moveDown();
 	for (let i = 0; i < sorted_counties.length; i++) {
 		if (doc.y > 700){
 			doc.switchToPage(1);
 			doc.y = 50;
 			// doc.x = 50;
 			doc.font('Helvetica-Bold').fontSize(18).text('Table of Contents Continued');
+			doc.moveDown();
 		}
 		// doc.x = 50;
 		doc.font('Helvetica-Bold').fontSize(12).text(sorted_counties[i]+' County',{ width: 500, align: 'left', lineGap: 1 });
