@@ -41,6 +41,8 @@ function createPDF(data, res){
 	let counties = [];
 	let pages = [];
 	let listings = [];
+	let new_listings = [];
+
 	for (let i = 0; i < data.properties.property.length; i++) {
 		counties.push(data.properties.property[i].county[0]);
 	}
@@ -85,6 +87,16 @@ function createPDF(data, res){
 			}else{
 				listings[i] = 1;
 			}
+			const date1 = new Date(property.listdate);
+			const date2 = new Date(Date.now() - 12096e5);
+			if( date1 >= date2 ){
+				if( new_listings[i] !== undefined){
+					new_listings[i]++;
+				}else{
+					new_listings[i] = 1;
+				}
+			}
+
 			// if (doc.y > 600){
 			// 	doc.addPage();
 			// 	doc.text(sorted_counties[i]+' county', 50, doc.page.height - 50, {
@@ -150,10 +162,17 @@ function createPDF(data, res){
 			doc.font('Helvetica-Bold').fontSize(18).text('Table of Contents Continued');
 		}
 		// doc.x = 50;
-		doc.font('Helvetica').fontSize(12).text(sorted_counties[i]+' County',{continued: true, width: 500, align: 'left'});
-		doc.font('Helvetica').fontSize(12).text('('+listings[i]+' Listings)',{continued: true, align: 'center'});
+		doc.font('Helvetica-Bold').fontSize(12).text(sorted_counties[i]+' County',{ width: 500, align: 'left', lineGap: 1 });
+		doc.moveUp(1);
+		doc.font('Helvetica').fontSize(12);
+		if( undefined !== new_listings[i] ){
+			doc.text('('+listings[i]+' Listings, '+new_listings[i]+' New Listings)',{ width: 500, align: 'center', continued: true, lineGap: 1});
+		}else{
+			doc.text('('+listings[i]+' Listings)',{ width: 500, align: 'center', continued: true, lineGap: 1});
+		}
 		// doc.x = 400;
-		doc.text(pages[i],{align: 'right' }); // , lineGap: 10
+		// doc.moveUp;
+		doc.text('Page '+pages[i],{width: 500, align: 'right', lineGap: 1 }); // , lineGap: 10
 	}
 
 	doc.pipe(res);
