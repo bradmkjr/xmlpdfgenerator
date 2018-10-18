@@ -32,7 +32,7 @@ function sort_unique(arr) {
 }
 
 function createPDF(data, res){
-	const doc = new PDFDocument({bufferPages: true});
+	const doc = new PDFDocument({bufferPages: true, layout: "landscape", margin: 36});
 	let filename = 'hot-sheet-9-28-2018';
 	filename = encodeURIComponent(filename) + '.pdf';
 	// Setting response to 'attachment' (download).
@@ -50,6 +50,7 @@ function createPDF(data, res){
 	// Skip 1st pages
 	doc.addPage();
 	doc.addPage();
+	doc.addPage();
 
 	// console.log(counties);
 
@@ -61,7 +62,7 @@ function createPDF(data, res){
 	// doc.text(sorted_counties[0]+' county', 50, doc.page.height - 50, {
 	// 	    lineBreak: false
 	// 	});
-	doc.y = 50;
+	// doc.y = 36;
 	// doc.x = 50;
 
 	for (let i = 0; i < sorted_counties.length; i++) {
@@ -70,9 +71,9 @@ function createPDF(data, res){
 			doc.moveDown();
 		}
 		doc.font('Helvetica-Bold').fontSize(18).text(sorted_counties[i]+' County');
-		doc.moveDown();
-		// doc.moveTo( doc.x, doc.y).lineTo(550, doc.y).stroke();
 		// doc.moveDown();
+		doc.moveTo( doc.x, doc.y).lineTo(500, doc.y).stroke();
+		doc.moveDown();
 		pages[i] = doc._root.document._pageBuffer.length;
 
 		for (let j = 0; j < data.properties.property.length; j++) {
@@ -107,32 +108,59 @@ function createPDF(data, res){
 
 			// }
 			// console.log(property);
-		    doc.font('Helvetica-Bold').fontSize(18).text(property.title);
-		    doc.font('Helvetica').fontSize(14).text(property.city+' '+property.state);
+			// return;
+		    doc.font('Helvetica-Bold').fontSize(16);
+		    doc.text(property.title);
+		    doc.font('Helvetica').fontSize(14);
+		    const address = (( '' != property.address1.toString().trim() )?property.address1.toString().trim()+' ':'') +
+		    				(( '' != property.address2.toString().trim() )?property.address2.toString().trim()+' ':'') +
+		    				property.city.toString().trim()+', '+property.state.toString().trim();
+		    doc.text(address,{continued: true,width: 720});
+
+		    doc.text('$'+parseInt(property.price).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'),{align: "right"});
 		    doc.fontSize(12);
-		    doc.text('Status: ',{continued: true}).fillColor('green').text(property.status);
-		    doc.fontSize(12).fillColor('black');
+		    const listedDate = new Date(property.listdate);
+		    const month = listedDate.getUTCMonth() + 1; //months from 1-12
+			const day = listedDate.getUTCDate();
+			const year = listedDate.getUTCFullYear();
+
+			const date =  month + "/" + day + "/" + year ;
+		    doc.text('Listed Date: '+date,{width: 720, align: "center"});
+		    doc.moveUp();
+		    doc.text('Status: ',{continued: true, width: 720});
+		    doc.fillColor('green');
+		    doc.text(property.status,{continued: true});
+		    doc.fillColor('black');
+		    doc.text('Acres: '+property.acreagesize,{align: "right"});
 		    // doc.fontSize(12).fillColor('black').list(property.types);
 		    // doc.fontSize(12).list(property.features);
 		    // console.log(property.types[0]);
+		    let startingY = doc.y;
+		    // console.log(startingY);
 		    if( undefined !== property.types[0] && undefined !== property.types[0].type ){
-		    	doc.font('Helvetica-Bold').text('Types: ',{continued: true});
+		    	doc.font('Helvetica-Bold').text('Types: ',{continued: true, width: 340});
 		    	doc.font('Helvetica').text(property.types[0].type.join(', '));
 		    	// console.log(property.types.type.length);
 		    	// console.log(property.types);
+		    	// doc.moveUp();
 		    }
 		    if( undefined !== property.features[0].feature && 0 < property.features[0].feature.length ){
-		    	doc.font('Helvetica-Bold').text('Features: ',{continued: true});
+		    	doc.y = startingY;
+		    	doc.x = 412;
+		    	// doc.moveUp();
+		    	doc.font('Helvetica-Bold').text('Features: ',{continued: true, width: 340});
 		    	doc.font('Helvetica').text(property.features[0].feature.join(', '));
 		    	// console.log(property.features.feature);
+		    	doc.x = 36;
 		    }
-		    doc.fontSize(10)
-		       .text(property.description,
-		       		 {  align: 'justify',
-		       		    width: 500,
-		       		    height: 80,
-		       		    ellipsis: true
-		       		  });
+		    // Description
+		    // doc.fontSize(10)
+		    //    .text(property.description,
+		    //    		 {  align: 'justify',
+		    //    		    width: 720,
+		    //    		    height: 40,
+		    //    		    ellipsis: true
+		    //    		  });
 		    // console.log(property.images[0].image[0]);
 		    // if( property.images !== undefined ){
 		    	// const img = new Buffer(property.images[0].image[0], 'base64');
@@ -148,33 +176,42 @@ function createPDF(data, res){
 	}
 
 	// console.log(pages);
-	console.log(listings);
+	// console.log(listings);
 
 	doc.switchToPage(0);
-	doc.y = 50;
+	doc.y = 36;
 	// doc.x = 50;
 	doc.font('Helvetica-Bold').fontSize(18).text('Table of Contents');
+	doc.moveUp(1);
+	doc.font('Helvetica-Bold').fontSize(18).text('Tom Smith Land Homes - Confidential', {align: 'right'});
 	doc.moveDown();
 	for (let i = 0; i < sorted_counties.length; i++) {
-		if (doc.y > 700){
-			doc.switchToPage(1);
-			doc.y = 50;
+		if ( ( 1 < i ) && ( i % 30 == 0 ) ){
+			// console.log(sorted_counties.length);
+			// console.log(Math.floor(i/30.0));
+			doc.switchToPage(Math.floor(i/30.0));
+			doc.y = 36;
 			// doc.x = 50;
-			doc.font('Helvetica-Bold').fontSize(18).text('Table of Contents Continued');
+			// doc.font('Helvetica-Bold').fontSize(18).text('Table of Contents: Tom Smith Land Homes - Confidential ',{continued: true});
+			doc.font('Helvetica-Bold').fontSize(18).text('Table of Contents',{continued: true});
+			doc.font('Helvetica').fontSize(14).text(' (continued)');
+			doc.moveUp(1);
+			doc.font('Helvetica-Bold').fontSize(18).text('Tom Smith Land Homes - Confidential', {align: 'right'});
+
 			doc.moveDown();
 		}
 		// doc.x = 50;
-		doc.font('Helvetica-Bold').fontSize(12).text(sorted_counties[i]+' County',{ width: 500, align: 'left', lineGap: 1 });
+		doc.font('Helvetica-Bold').fontSize(12).text(sorted_counties[i]+' County',{ width: 720, align: 'left', lineGap: 1 });
 		doc.moveUp(1);
 		doc.font('Helvetica').fontSize(12);
 		if( undefined !== new_listings[i] ){
-			doc.text('('+listings[i]+' Listings, '+new_listings[i]+' New Listings)',{ width: 500, align: 'center', continued: true, lineGap: 1});
+			doc.text('('+listings[i]+' Listings, '+new_listings[i]+' New Listings)',{ width: 720, align: 'center', continued: true, lineGap: 1});
 		}else{
-			doc.text('('+listings[i]+' Listings)',{ width: 500, align: 'center', continued: true, lineGap: 1});
+			doc.text('('+listings[i]+' Listings)',{ width: 720, align: 'center', continued: true, lineGap: 1});
 		}
 		// doc.x = 400;
 		// doc.moveUp;
-		doc.text('Page '+pages[i],{width: 500, align: 'right', lineGap: 1 }); // , lineGap: 10
+		doc.text('Page '+pages[i],{width: 720, align: 'right', lineGap: 1 }); // , lineGap: 10
 	}
 
 	doc.pipe(res);
