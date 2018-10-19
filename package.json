@@ -22,6 +22,7 @@
     "express": "^4.16.3",
     "eyes": "^0.1.8",
     "fs": "0.0.1-security",
+    "google-libphonenumber": "^3.1.15",
     "https": "^1.0.0",
     "md5": "^2.2.1",
     "pdfkit": "^0.8.3",
