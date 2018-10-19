@@ -9,6 +9,9 @@ const PDFDocument = require('pdfkit');
 const md5 = require('md5');
 const cache = require('sqlcachedb');
 
+const slugify = require('slugify');
+
+
 // const libphonenumber = require('google-libphonenumber');
 // const phoneUtil = libphonenumber.phoneUtil;
 // const PNF = libphonenumber.PhoneNumberFormat;
@@ -149,24 +152,31 @@ function createPDF(data, req, res){
 			// console.log(property);
 			// return;
 		    doc.font('Helvetica-Bold').fontSize(fontSize*1.1);
-		    doc.text(property.title);
+		    const key = property.title+property.address1+property.zip+property.listdate;
+		    console.log(key);
+		    const hash = md5(key);
+		    // 'id' => md5( ( (string) $property->title).
+		    // 			  ( (string) $property->address1).
+		    // 			  ( (string) $property->zip).
+		    // 	          ( (string) $property->listdate) ), // .( (string) $property->price)
+		    doc.text(property.title, {link: 'https://tomsmithlandandhomes.com/property/'+hash.substring(0,7)+'/'});
 		    doc.moveUp();
 
 		    let phone = ''+property.agent[0]['agent-phone'];
 		    // phone = phone.replace(/[^\d]/g, '');
 		    const number = phoneUtil.parseAndKeepRawInput(phone, 'US');
 		    // console.log(phoneUtil.format(number, PNF.NATIONAL));
-
-		    doc.font('Helvetica').text(property.agent[0]['agent-name']+' '+phoneUtil.format(number, PNF.NATIONAL),{align: "right"});
+		    // +' '+phoneUtil.format(number, PNF.NATIONAL)
+		    doc.font('Helvetica').text(property.agent[0]['agent-name'],{link: "https://tomsmithlandandhomes.com/agent/"+slugify(""+property.agent[0]['agent-name'])+"/", align: "right"});
 		    doc.fontSize(fontSize*1.1);
 		    const address = (( '' != property.address1.toString().trim() )?property.address1.toString().trim()+' ':'') +
 		    				(( '' != property.address2.toString().trim() )?property.address2.toString().trim()+' ':'') +
 		    				property.city.toString().trim()+', '+
 		    				property.state.toString().trim(); // +' '+
 		    				// property.county.toString().trim()+' County';
-		    doc.text(address,{continued: true,width: 720});
+		    doc.text(address,{continued: true});
 
-		    doc.text('$'+parseInt(property.price).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'),{align: "right"});
+		    doc.text(('$'+parseInt(property.price).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')).trim(),{align: "right"});
 		    doc.fontSize(fontSize*.9);
 		    const listedDate = new Date(property.listdate);
 		    const month = listedDate.getUTCMonth() + 1; //months from 1-12
@@ -184,19 +194,19 @@ function createPDF(data, req, res){
 		    doc.moveUp();
 
 		    doc.x = 276;
-		    doc.text('Beds: '+property.bedrooms,{width: 120});
+		    doc.text('Bedrooms: '+property.bedrooms,{width: 120});
 		    doc.moveUp();
 
 		    doc.x = 396;
-		    doc.text('Baths: '+property.bathrooms,{width: 120});
+		    doc.text('Bathrooms: '+property.bathrooms,{width: 120});
 		    doc.moveUp();
 
-		    doc.x = 512;
+		    doc.x = 516;
 		    doc.text('Owner: '+( ( '' != ''+property.ownername)?property.ownername:'N/A' ),{width: 120});
 		    doc.moveUp();
 
-		    doc.x = 632;
-		    doc.text('Acres: '+property.acreagesize,{width: 120, align: "right"});
+		    doc.x = 636;
+		    doc.text(('Acres: '+property.acreagesize).trim(),{width: 120, align: "right"});
 
 		    doc.x = 36;
 		    // doc.fontSize(12).fillColor('black').list(property.types);
@@ -273,7 +283,7 @@ function createPDF(data, req, res){
 		// if ( ( 1 < i ) && ( i * fontSize > 500 ) ){
 			// console.log(sorted_counties.length);
 			const switchToPage = 1+Math.floor(i/(sorted_counties.length / pagesToAdd));
-			console.log(switchToPage);
+			// console.log(switchToPage);
 			doc.switchToPage(switchToPage);
 			doc.y = 36;
 			// doc.x = 50;
