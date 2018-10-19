@@ -91,7 +91,7 @@ function createPDF(data, req, res){
 	}
 
 	const countiesPerPage = Math.floor(500/fontSize);
-	console.log(countiesPerPage);
+	// console.log(countiesPerPage);
 	// console.log(sorted_counties);
 	// doc.text(sorted_counties[0]+' county', 50, doc.page.height - 50, {
 	// 	    lineBreak: false
@@ -153,7 +153,7 @@ function createPDF(data, req, res){
 			// return;
 		    doc.font('Helvetica-Bold').fontSize(fontSize*1.1);
 		    const key = property.title+property.address1+property.zip+property.listdate;
-		    console.log(key);
+		    // console.log(key);
 		    const hash = md5(key);
 		    // 'id' => md5( ( (string) $property->title).
 		    // 			  ( (string) $property->address1).
@@ -176,7 +176,10 @@ function createPDF(data, req, res){
 		    				// property.county.toString().trim()+' County';
 		    doc.text(address,{continued: true});
 
-		    doc.text(('$'+parseInt(property.price).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')).trim(),{align: "right"});
+		    // const price = (''+Math.floor(parseInt(property.price).toLocaleString('en').toFixed(2))).replace(/\d(?=(\d{3})+\.)/g, '$&,')).trim();
+		    const price = parseInt(property.price).toLocaleString('en');
+
+		    doc.text(('$'+price),{align: "right"});
 		    doc.fontSize(fontSize*.9);
 		    const listedDate = new Date(property.listdate);
 		    const month = listedDate.getUTCMonth() + 1; //months from 1-12
@@ -186,27 +189,39 @@ function createPDF(data, req, res){
 			const date =  month + "/" + day + "/" + year ;
 
 			doc.x = 36;
-		    doc.text('Listed Date: '+date,{width: 120});
+		    doc.text('Listed: '+date,{width: 90});
 		    doc.moveUp();
 
-		    doc.x = 156;
-		    doc.text('Status: '+property.status,{width: 120});
+		    doc.x = 126;
+		    doc.text('Status: '+property.status,{width: 90});
 		    doc.moveUp();
 
-		    doc.x = 276;
-		    doc.text('Bedrooms: '+property.bedrooms,{width: 120});
+		    doc.x = 216;
+		    doc.text('Bedrooms: '+property.bedrooms,{width: 90});
+		    doc.moveUp();
+
+		    doc.x = 306;
+		    doc.text('Bathrooms: '+property.bathrooms,{width: 90});
 		    doc.moveUp();
 
 		    doc.x = 396;
-		    doc.text('Bathrooms: '+property.bathrooms,{width: 120});
+		    if( '' != ''+property.videolink ){
+		    	doc.text('Video: Yes',{width: 90, link: property.videolink});
+		    }else{
+		    	doc.text('Video: N/A',{width: 90});
+		    }
 		    doc.moveUp();
 
-		    doc.x = 516;
-		    doc.text('Owner: '+( ( '' != ''+property.ownername)?property.ownername:'N/A' ),{width: 120});
+		    doc.x = 486;
+		    doc.text('Owner: '+( ( '' != ''+property.ownername)?property.ownername:'N/A' ),{width: 90});
 		    doc.moveUp();
 
-		    doc.x = 636;
-		    doc.text(('Acres: '+property.acreagesize).trim(),{width: 120, align: "right"});
+		    doc.x = 576;
+		    doc.text('School: '+( ( '' != ''+property.schooldistrict)?property.schooldistrict:'N/A' ),{width: 90});
+		    doc.moveUp();
+
+		    doc.x = 666;
+		    doc.text(('Acres: '+property.acreagesize).trim(),{width: 90, align: "right"});
 
 		    doc.x = 36;
 		    // doc.fontSize(12).fillColor('black').list(property.types);
